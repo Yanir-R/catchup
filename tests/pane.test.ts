@@ -128,3 +128,78 @@ test('the header says "1 message", not "1 messages"', async ($, on) => {
   expect(await ui.find({ type: 'Text', text: /1 messages/ })).toBe(undefined)
   await ui.unmount()
 })
+
+
+test('after /clear the pane forgets the summary and the handled items, because they live in memory only', async ($, on) => {
+  on('ui.open', () => ({ value: { isPlaced: true as const } }))
+  on('session.messages', () => ({ value: [user('Build it.'), agent('Which database should I use?\n1. SQLite\n2. Postgres (Recommended)')] }))
+  on('model.complete', () => ({ value: { isAnswered: true as const, text: MODEL_ANSWER, usage: USAGE } }))
+  on('classic.SessionStart', () => ({}))
+  const clock = mock.clock(on)
+
+  await $.command.run({ command: 'catchup', args: '' })
+  await clock.advance(10)
+
+  const before = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(await before.find({ type: 'Text', text: /NEEDS YOU \(1\)/ })).toBeDefined()
+  await before.press({ key: 'done:3' })
+  expect(await before.find({ key: 'restore' })).toBeDefined()
+  await before.unmount()
+
+  await $.classic.SessionStart({ source: 'clear' })
+
+  const after = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(await after.find({ type: 'Text', text: /NEEDS YOU/ })).toBe(undefined)
+  expect(await after.find({ key: 'restore' })).toBe(undefined)
+  expect(await after.find({ type: 'Text', text: /brief me/ })).toBeDefined()
+  await after.unmount()
+})
+
+test('after a compaction the summary stays, because the conversation is the same', async ($, on) => {
+  on('ui.open', () => ({ value: { isPlaced: true as const } }))
+  on('session.messages', () => ({ value: [user('Build it.'), agent('Which database should I use?\n1. SQLite\n2. Postgres (Recommended)')] }))
+  on('model.complete', () => ({ value: { isAnswered: true as const, text: MODEL_ANSWER, usage: USAGE } }))
+  on('classic.SessionStart', () => ({}))
+  const clock = mock.clock(on)
+
+  await $.command.run({ command: 'catchup', args: '' })
+  await clock.advance(10)
+  await $.classic.SessionStart({ source: 'compact' })
+
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /NEEDS YOU \(1\)/ })).toBeDefined()
+  await ui.unmount()
+})
+
+test('the Catch up button appears after the timer finds many unread messages, and its press opens the pane', async ($, on) => {
+  const texts = Array.from({ length: 10 }, (_, i) => `Agent reply number ${i + 1}.`)
+  const messages = [user('Start.'), ...texts.map(t => agent(t))]
+
+  on('ui.open', () => ({ value: { isPlaced: true as const } }))
+  on('command.register', () => ({ value: undefined }))
+  on('session.start', () => ({ cwd: '/work' }))
+  on('session.messages', () => ({ value: messages }))
+  on('model.complete', () => ({ value: { isAnswered: true as const, text: MODEL_ANSWER, usage: USAGE } }))
+  on('ui.render', () => ({ type: 'Text', props: {}, children: ['drawn by Claude Code'] }))
+  const clock = mock.clock(on)
+
+  await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })
+
+  // Only the first agent reply is on screen; the other nine are below it.
+  const ROW = { plugin: 'catchup', surface: 'terminal' as const, props: { text: texts[0], onScreen: { top: 0, bottom: 1 } } as never }
+  const row = await $.ui.mount({ ...ROW, component: 'AssistantMessage' as const, requestId: 'row-1' })
+  await row.unmount()
+
+  await clock.advance(1500)
+
+  const band = await $.ui.mount({ plugin: 'catchup', surface: 'terminal', component: 'AbovePrompt', requestId: 'band', props: { hasSurvey: false } as never })
+  expect(await band.find({ type: 'Text', text: /9 new messages below/ })).toBeDefined()
+  expect(await band.find({ key: 'catchup' })).toBeDefined()
+  await band.press({ key: 'catchup' })
+  await clock.advance(10)
+  await band.unmount()
+
+  const pane = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(await pane.find({ type: 'Text', text: /Catch-up: 9 new messages/ })).toBeDefined()
+  await pane.unmount()
+})

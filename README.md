@@ -147,8 +147,16 @@ DONE 1 · DECIDED 1
   retry). The mod has no server, no network code and no file access of its own.
 - Before the text is sent, the mod removes private keys, common API token formats, `Bearer` tokens, `password=`
   style values and email addresses. This is a safety net, not a guarantee. Do not rely on it for secrets.
-- The mod keeps the last summary, the list of items you marked handled, and a few numbers in the session's state. It
-  writes no file.
+- **Memory only.** The mod keeps the last summary, the list of items you marked handled, and a few counters in the
+  memory of the running mod. It uses no session state, no store and no file, and it makes no network call of its own.
+  `scripts/release-check.sh` fails a release if the validator lists a state, store, file, network or process call.
+- **When it forgets.** Everything is dropped when you run `/clear`, `/resume` or `/branch`, when the plugin reloads
+  (`/reload-plugins`, an update), and when Claude Code exits. A compaction keeps it.
+- **Where text can go.** Only where you send it: the summary reaches the clipboard when you press **Copy** or
+  **Copy handoff**, and the prompt box when you press **Reply template**. After that, Claude Code and your clipboard
+  hold it, not the mod.
+- **What the model call sees.** The text of the messages you ask it to summarize goes to the model you already use,
+  through your own session (see the redaction note above).
 - Messages are treated as data. The prompt tells the model to ignore instructions inside them.
 
 ## Known limits
@@ -157,6 +165,7 @@ DONE 1 · DECIDED 1
   the button shows only for the "away" case. The command and the phrases always work.
 - Messages that quote each other can look the same. The mod then picks the nearest match. The count can be off by a few.
 - A range of more than about 8 chunks of text leaves out the oldest messages. The summary says so.
+- A plugin reload (`/reload-plugins`, an update) drops the summary and the handled list, and restarts the away timer. Run it again.
 - Something you did, or answered in a screenshot, is not seen. Mark the item handled with ✓.
 - Recommendations in unusual wording or in tables are not read.
 - Only the terminal is tested. The Desktop app's Code tab should work, but nobody has checked ([issue 1](https://github.com/Yanir-R/catchup/issues/1)). Where a mod cannot draw (the VS Code chat panel, `claude -p`, cloud sessions), `/catchup` shows nothing yet ([issue 2](https://github.com/Yanir-R/catchup/issues/2)). Help is welcome on both.
@@ -239,6 +248,10 @@ the standard and does not claim to conform to it.
 **Does it send my conversation anywhere?**
 Only to the model you already use in Claude Code, through your own session. The mod has no server and no network code.
 Secrets and emails are removed first. This is a safety net, not a guarantee.
+
+**Does it store my conversation?**
+No. The summary is held in memory while the mod runs and is dropped on `/clear`, `/resume`, `/branch`, a plugin reload or exit.
+It writes no file and uses no store. See [Privacy](#privacy).
 
 **Can I trust the summary?**
 Check an item against its `[#n]` source before you act on it. A result with no proof is shown as `NOT CHECKED`, never as done.

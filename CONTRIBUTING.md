@@ -26,7 +26,7 @@ bash scripts/scan.sh          # looks for home paths, emails, secret-shaped stri
 - `hooks/register.tsx` connects the mod to Claude Code: hooks, the pane, the buttons.
 - `hooks/lib/` holds the logic. It makes no engine calls, so it is easy to test. Keep new logic here.
 - `tests/` has one file per module. `tests/pane.test.ts` mounts the real pane through the engine with a fake model.
-- The engine only lets `$` go to functions declared at the top of the file that uses it, and a render hook may not write state.
+- The engine only lets `$` go to functions declared at the top of the file that uses it, and a render hook may not write state. The mod keeps all of its data in memory (the `mem` object in `register`), and a gate in `scripts/release-check.sh` fails the release if the code starts to use state, the store, files, the network or a process.
   Keep these in mind when you edit `register.tsx`.
 
 ## Rules

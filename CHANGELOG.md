@@ -6,8 +6,20 @@ All notable changes to this project are written here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-10
+
 ### Changed
+- The mod keeps its data in memory only. It no longer uses session state: the summary, the handled list and the counters
+  live in the running mod and are dropped on `/clear`, `/resume`, `/branch`, a plugin reload and exit.
+- The manifest no longer needs the `types` field, and the state declaration is gone.
 - Known limits now name where the mod is untested, with links to open issues.
+
+### Added
+- `scripts/release-check.sh` fails a release if the validator lists a state, store, file, network or process call.
+- Tests for the reset after `/clear`, the summary kept after a compaction, and the button that the timer shows.
+
+### Known
+- A plugin reload now drops the summary and the handled list. Run `/catchup` again.
 
 ## [0.1.6] - 2026-10-10
 

@@ -44,16 +44,3 @@ export type CatchupUnread = {
   /** Where its range starts in the session's messages. */
   from: number
 }
-
-declare module 'claude-code' {
-  interface PluginState {
-    catchup: {
-      view: CatchupView
-      unread: CatchupUnread
-      lastPromptAt: number
-      dismissedAt: number
-      dismissed: CatchupDismissed[]
-      expanded: boolean
-    }
-  }
-}

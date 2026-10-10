@@ -9,7 +9,7 @@ Examples of what to report:
 
 - Text leaves your session in a way the README does not describe.
 - A secret, token or email address gets through the removal step before the model call.
-- The mod reads or writes something outside its own pane and session state.
+- The mod reads or writes something outside its own pane and memory.
 
 ## What the mod does with your data
 

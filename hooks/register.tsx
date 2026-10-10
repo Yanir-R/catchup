@@ -1,4 +1,3 @@
-import { atom, read, update } from 'claude-code'
 import type { Engine, OnScreen, Register } from 'claude-code'
 
 import { matchPhrase, parseArgs } from './lib/parse'
@@ -22,19 +21,29 @@ import type { Row } from './lib/unread'
 const PANE = 'catchup'
 const MAX_ROWS = 400
 
-const view = atom({ plugin: 'catchup', key: 'view' } as const, {
-  status: 'idle' as const,
-  lines: [],
-  data: null,
-  label: '',
-  at: 0,
-})
-// Open items the person marked handled, and whether the pane shows every section. Both last for the session.
-const dismissed = atom({ plugin: 'catchup', key: 'dismissed' } as const, [])
-const expanded = atom({ plugin: 'catchup', key: 'expanded' } as const, false)
-const unread = atom({ plugin: 'catchup', key: 'unread' } as const, { reason: null, n: 0, from: 0 })
-const lastPromptAt = atom({ plugin: 'catchup', key: 'lastPromptAt' } as const, 0)
-const dismissedAt = atom({ plugin: 'catchup', key: 'dismissedAt' } as const, 0)
+type Unread = { reason: 'many' | 'afk' | null; n: number; from: number }
+
+/** Everything the mod remembers. It lives in memory only: no state, no store, no file. */
+type Memory = {
+  view: View
+  // Open items the person marked handled, and whether the pane shows every section.
+  dismissed: Dismissed[]
+  expanded: boolean
+  unread: Unread
+  lastPromptAt: number
+  dismissedAt: number
+}
+
+function freshMemory(now: number): Memory {
+  return {
+    view: { status: 'idle', lines: [], data: null, label: '', at: 0 },
+    dismissed: [],
+    expanded: false,
+    unread: { reason: null, n: 0, from: 0 },
+    lastPromptAt: now,
+    dismissedAt: 0,
+  }
+}
 
 type RowProps = { text?: string; tool_use_id?: string; onScreen?: OnScreen | null }
 
@@ -60,15 +69,16 @@ async function fillReply($: Engine, text: string, surface: Surface): Promise<voi
 }
 
 /** Marks an open item as handled, so it stays hidden from the pane, the handoff and the reply template. */
-async function dismissItem($: Engine, item: Dismissed, runId: number | undefined): Promise<void> {
-  await update($, dismissed, list => remember(list, { ...item, run: runId }))
+function dismissItem($: Engine, mem: Memory, item: Dismissed, runId: number | undefined): void {
+  mem.dismissed = remember(mem.dismissed, { ...item, run: runId })
+  $.ui.invalidate('ui.render')
 }
 
 type View = { status: 'idle' | 'working' | 'done' | 'error'; lines: Line[]; data: Data | null; label: string; at: number }
 
 /** Sends a button's text where its table says: the clipboard, or (reply template only) the prompt box. */
-async function deliver($: Engine, which: Which, v: View, surface: Surface): Promise<void> {
-  const handled = await read($, dismissed)
+async function deliver($: Engine, mem: Memory, which: Which, v: View, surface: Surface): Promise<void> {
+  const handled = mem.dismissed
   const texts = v.data === null ? { text: toPlainText(v.lines), handoff: '', reply: '' } : textsFor(v.data, handled)
   const delivery = deliveryFor(which, texts)
 
@@ -98,7 +108,7 @@ async function askModel($: Engine, prompt: string, model: string, signal: AbortS
   return { ok: false, reason: r.reason === 'api-error' ? `the model call failed (${r.error})` : `the model call ended (${r.reason})` }
 }
 
-async function makeSummary($: Engine, range: Range, mine: AbortController, model: string): Promise<void> {
+async function makeSummary($: Engine, mem: Memory, range: Range, mine: AbortController, model: string): Promise<void> {
   const all = await $.session.messages()
   const start = range.from !== undefined && range.from <= all.length ? range.from : pickStart(all, range.n)
   const picked = all.slice(start)
@@ -113,7 +123,8 @@ async function makeSummary($: Engine, range: Range, mine: AbortController, model
 
   if (picked.length === 0) {
     const text = `No messages after your last prompt. Checked ${all.length} messages; your last prompt is number ${lastPromptIndex(all) + 1}.`
-    await update($, view, () => ({ status: 'done', lines: [{ tone: 'dim', text }], data: null, label, at: Date.now() }))
+    mem.view = { status: 'done', lines: [{ tone: 'dim', text }], data: null, label, at: Date.now() }
+    $.ui.invalidate('ui.render')
 
     return
   }
@@ -129,23 +140,25 @@ async function makeSummary($: Engine, range: Range, mine: AbortController, model
 
   const data = result.ok && result.data !== undefined ? { ...result.data, run: Date.now() } : null
 
-  await update($, view, () => ({ status: result.ok ? 'done' : 'error', lines, data, label, at: Date.now() }))
+  mem.view = { status: result.ok ? 'done' : 'error', lines, data, label, at: Date.now() }
+  $.ui.invalidate('ui.render')
 }
 
 /** Opens the pane at once and does the work on a timer, so the caller returns fast. */
-async function begin($: Engine, range: Range, ctx: Context): Promise<void> {
+async function begin($: Engine, mem: Memory, range: Range, ctx: Context): Promise<void> {
   ctx.running?.abort()
   const mine = new AbortController()
   ctx.running = mine
 
   await $.ui.open({ id: PANE, title: 'Catch-up' })
-  await update($, view, () => ({ status: 'working', lines: [], data: null, label: range.from !== undefined ? 'new messages' : range.n === null ? 'since your last message' : `last ${range.n} ${range.n === 1 ? 'message' : 'messages'}`, at: Date.now() }))
-  const total = (await $.session.messages()).length
-  await update($, dismissedAt, () => total)
-  const start = async (): Promise<void> => {
-    await makeSummary($, range, mine, ctx.model)
+  const label = range.from !== undefined ? 'new messages' : range.n === null ? 'since your last message' : `last ${range.n} ${range.n === 1 ? 'message' : 'messages'}`
+  mem.view = { status: 'working', lines: [], data: null, label, at: Date.now() }
+  $.ui.invalidate('ui.render')
+  mem.dismissedAt = (await $.session.messages()).length
+  const begun = async (): Promise<void> => {
+    await makeSummary($, mem, range, mine, ctx.model)
   }
-  $.clock.after(0, start)
+  $.clock.after(0, begun)
 }
 
 export const register: Register = (on, options) => {
@@ -159,6 +172,7 @@ export const register: Register = (on, options) => {
   let ticks = 0
   let lastShown = ''
   const ctx: Context = { model, running: null }
+  const mem = freshMemory(Date.now())
 
   function track(requestId: string, props: RowProps): void {
     // Rows with no viewport report (another surface) are never counted.
@@ -182,10 +196,6 @@ export const register: Register = (on, options) => {
       description: 'Summarize the messages you have not read. Optional: a number of messages.',
     })
 
-    if ((await read($, lastPromptAt)) === 0) {
-      await update($, lastPromptAt, () => Date.now())
-    }
-
     $.clock.every(700, async () => {
       ticks += 1
 
@@ -204,11 +214,10 @@ export const register: Register = (on, options) => {
       const below = countAgentMessages(all.slice(belowFrom))
       const sinceFrom = lastPromptIndex(all) + 1
       const since = countAgentMessages(all.slice(sinceFrom))
-      const dismissed = await read($, dismissedAt)
-      const away = Date.now() - (await read($, lastPromptAt))
+      const away = Date.now() - mem.lastPromptAt
       let shown: { reason: 'many' | 'afk' | null; n: number; from: number } = { reason: null, n: 0, from: 0 }
 
-      if (all.length > dismissed) {
+      if (all.length > mem.dismissedAt) {
         if (below >= threshold) {
           shown = { reason: 'many', n: below, from: belowFrom }
         } else if (since >= 1 && away >= afkMs) {
@@ -220,7 +229,8 @@ export const register: Register = (on, options) => {
 
       if (key !== lastShown) {
         lastShown = key
-        await update($, unread, () => shown)
+        mem.unread = shown
+        $.ui.invalidate('ui.render')
       }
     })
 
@@ -234,7 +244,7 @@ export const register: Register = (on, options) => {
       return { text: request.error }
     }
 
-    await begin($, { n: request.n }, ctx)
+    await begin($, mem, { n: request.n }, ctx)
 
     return { text: 'summary pane opened.' }
   })
@@ -244,16 +254,27 @@ export const register: Register = (on, options) => {
 
     if (request === null) {
       if (e.origin.kind === 'composer') {
-        await update($, lastPromptAt, () => Date.now())
+        mem.lastPromptAt = Date.now()
         isDirty = true
       }
 
       return next(e)
     }
 
-    await begin($, { n: request.n }, ctx)
+    await begin($, mem, { n: request.n }, ctx)
 
     return { drop: 'summary pane opened.' }
+  })
+
+  // /clear, /resume and /branch start another conversation: forget the summary of the old one.
+  on('classic.SessionStart', { source: ['clear', 'resume', 'fork'] }, async ($, e, next) => {
+    Object.assign(mem, freshMemory(Date.now()))
+    rows.clear()
+    lastShown = ''
+    isDirty = true
+    $.ui.invalidate('ui.render')
+
+    return next(e)
   })
 
   on('session.append', ($, e, next) => {
@@ -281,7 +302,7 @@ export const register: Register = (on, options) => {
   })
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    const u = await read($, unread)
+    const u = mem.unread
 
     if (e.props.hasSurvey || u.reason === null) {
       return next(e)
@@ -293,16 +314,16 @@ export const register: Register = (on, options) => {
     return (
       <Box>
         <Text dimColor>{why}</Text>
-        <Button key="catchup" label={`Catch up (${u.n})`} onPress={() => begin($, { n: u.n, from: u.from }, ctx)} />
+        <Button key="catchup" label={`Catch up (${u.n})`} onPress={() => begin($, mem, { n: u.n, from: u.from }, ctx)} />
       </Box>
     )
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const { Box, Button, Text } = $.ui.resolve(e)
-    const v = await read($, view)
-    const handled = await read($, dismissed)
-    const isOpen = await read($, expanded)
+    const v = mem.view
+    const handled = mem.dismissed
+    const isOpen = mem.expanded
     const isDone = v.status === 'done' || v.status === 'error'
     const data = v.data ?? null
     const shown = data === null ? { lines: v.lines ?? [], hidden: 0 } : present(data, handled, isOpen)
@@ -329,7 +350,7 @@ export const register: Register = (on, options) => {
               text
             ) : (
               <Box>
-                <Button key={`done:${i}`} label="✓" onPress={() => dismissItem($, item, data === null ? undefined : data.run)} />
+                <Button key={`done:${i}`} label="✓" onPress={() => dismissItem($, mem, item, data === null ? undefined : data.run)} />
                 {text}
               </Box>
             )
@@ -337,20 +358,20 @@ export const register: Register = (on, options) => {
         {isDone && canDismiss && <Text dimColor>✓ marks an item as handled and hides it from now on.</Text>}
         {isDone && shown.lines.length > 8 && <Text dimColor>Tab to focus this pane. Arrow keys scroll. [#n] is a message number.</Text>}
         <Box flexWrap="wrap" gap={1}>
-          <Button key="again" label="Run again" onPress={() => begin($, { n: null }, ctx)} />
-          {isDone && <Button key="copy" label="Copy" onPress={() => deliver($, 'copy', v, e.surface)} />}
-          {isDone && data !== null && <Button key="expand" label={isOpen ? 'Show less' : 'Show all'} onPress={() => update($, expanded, open => !open)} />}
-          {isDone && shown.hidden > 0 && <Button key="restore" label={`Show hidden (${shown.hidden})`} onPress={() => update($, dismissed, () => [])} />}
+          <Button key="again" label="Run again" onPress={() => begin($, mem, { n: null }, ctx)} />
+          {isDone && <Button key="copy" label="Copy" onPress={() => deliver($, mem, 'copy', v, e.surface)} />}
+          {isDone && data !== null && <Button key="expand" label={isOpen ? 'Show less' : 'Show all'} onPress={() => { mem.expanded = !mem.expanded; $.ui.invalidate('ui.render') }} />}
+          {isDone && shown.hidden > 0 && <Button key="restore" label={`Show hidden (${shown.hidden})`} onPress={() => { mem.dismissed = []; $.ui.invalidate('ui.render') }} />}
         </Box>
         {isDone && texts !== null && texts.handoff !== '' && (
           <Box flexDirection="column">
             <Box>
-              <Button key="handoff" label="Copy handoff" onPress={() => deliver($, 'handoff', v, e.surface)} />
+              <Button key="handoff" label="Copy handoff" onPress={() => deliver($, mem, 'handoff', v, e.surface)} />
             </Box>
             <Text dimColor>  Clipboard only. Paste it into a new session.</Text>
             {texts.reply !== '' && (
               <Box>
-                <Button key="reply" label="Reply template" onPress={() => deliver($, 'reply', v, e.surface)} />
+                <Button key="reply" label="Reply template" onPress={() => deliver($, mem, 'reply', v, e.surface)} />
               </Box>
             )}
             {texts.reply !== '' && <Text dimColor>  Fills the prompt box. You edit it there, then press Enter.</Text>}
