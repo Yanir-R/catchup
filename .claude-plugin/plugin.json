@@ -1,6 +1,6 @@
 {
   "name": "catchup",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Summarize the agent messages you have not read, in plain ASD-STE100-style English. Run /catchup, type \"brief me\", or press the Catch up button.",
   "license": "MIT",
   "author": {
@@ -36,7 +36,12 @@
     "handoff",
     "simplified-english",
     "claude-code",
-    "unread"
+    "unread",
+    "sdlc",
+    "adlc",
+    "agentic-workflow",
+    "agent-oversight",
+    "human-in-the-loop"
   ],
   "icon": "./.claude-plugin/icon.png",
   "types": "./types/index.d.ts",

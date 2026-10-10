@@ -6,6 +6,11 @@ All notable changes to this project are written here. The format follows
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-10-10
+
+### Added
+- Keywords for agent oversight and the SDLC and ADLC loop, and a README line that says where the mod fits.
+
 ## [0.1.5] - 2026-10-10
 
 ### Added

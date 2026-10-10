@@ -10,6 +10,8 @@ active voice), relaxed to about 80%. See [Notices](#notices).
 
 You come back to a long thread, or an agent worked while you were away. Instead of scrolling, you ask for a summary.
 
+In an agent development loop (SDLC or ADLC), it covers the oversight step: what the agent needs from you, what it did with proof, and a handoff for the next session. It does not plan, build, test or deploy.
+
 ## Demo
 
 ![You come back to a long agent thread. You press Catch up, read what needs you, hide an item, fill a reply, and answer in place.](docs/media/demo.gif)
