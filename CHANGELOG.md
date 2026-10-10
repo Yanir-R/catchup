@@ -6,8 +6,14 @@ All notable changes to this project are written here. The format follows
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-10-10
+
 ### Added
+- Listing details: a display name, privacy, support and documentation links, and two keywords.
 - The logo in the README, and a 1280x640 social preview image in `docs/media/`.
+
+### Changed
+- The author link now points to the author's portfolio.
 
 ## [0.1.4] - 2026-10-10
 
