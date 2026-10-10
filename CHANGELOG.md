@@ -6,6 +6,11 @@ All notable changes to this project are written here. The format follows
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-10-10
+
+### Fixed
+- The summary timer no longer passes the engine handle inside the call that sets the timer, so the plugin directory can read it.
+
 ## [0.1.2] - 2026-10-10
 
 ### Fixed
