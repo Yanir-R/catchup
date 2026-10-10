@@ -8,6 +8,7 @@ All notable changes to this project are written here. The format follows
 
 ### Fixed
 
+- Pressing ✓ hides exactly that item. It no longer hides a similar item from the same summary. A later run still hides a reworded copy of a handled item.
 - The reply to `/catchup` no longer repeats the plugin name (`catchup: catchup: summary pane opened.`).
 
 ## [0.1.0] - 2026-10-10

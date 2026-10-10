@@ -1,9 +1,11 @@
 import type { Summary } from './schema'
 
 /** An item the person marked as handled. Its words and its message numbers identify it. */
-export type Dismissed = { text: string; src: number[] }
+export type Dismissed = { text: string; src: number[]; run?: number }
 
 const MAX_DISMISSED = 200
+
+const norm = (text: string): string => (text.toLowerCase().match(/[a-z0-9]+/g) ?? []).join(' ')
 
 const words = (text: string): Set<string> => new Set((text.toLowerCase().match(/[a-z0-9]+/g) ?? []).filter(w => w.length > 2))
 
@@ -24,14 +26,20 @@ function jaccard(a: ReadonlySet<string>, b: ReadonlySet<string>): number {
 }
 
 /**
- * True if the item is one the person already handled. The model words the same
- * item a little differently from run to run, so an item matches when most of its
- * words match, or when it cites the same messages and shares some words.
+ * True if the item is one the person already handled. In the summary the person
+ * pressed ✓ in (`run`), only the very same item matches, so one press never hides
+ * a similar item beside it. In a later run the model words the same item a little
+ * differently, so there an item matches when most of its words match, or when it
+ * cites the same messages and shares some words.
  */
-export function isDismissed(item: Dismissed, list: readonly Dismissed[]): boolean {
+export function isDismissed(item: Dismissed, list: readonly Dismissed[], run?: number): boolean {
   const w = words(item.text)
 
   return list.some(d => {
+    if (run !== undefined && d.run === run) {
+      return norm(d.text) === norm(item.text)
+    }
+
     const similarity = jaccard(w, words(d.text))
     const sameSources = d.src.length > 0 && d.src.length === item.src.length && [...d.src].sort().join() === [...item.src].sort().join()
 
@@ -41,20 +49,20 @@ export function isDismissed(item: Dismissed, list: readonly Dismissed[]): boolea
 
 /** Adds an item to the handled list once. */
 export function remember(list: readonly Dismissed[], item: Dismissed): Dismissed[] {
-  return isDismissed(item, list) ? [...list] : [...list, { text: item.text, src: [...item.src] }].slice(-MAX_DISMISSED)
+  return isDismissed(item, list, item.run) ? [...list] : [...list, { text: item.text, src: [...item.src], run: item.run }].slice(-MAX_DISMISSED)
 }
 
 /** The summary without the open items the person handled: questions, tasks, failures and unproven items. */
-export function withoutDismissed(s: Summary, list: readonly Dismissed[]): Summary {
+export function withoutDismissed(s: Summary, list: readonly Dismissed[], run?: number): Summary {
   if (list.length === 0) {
     return s
   }
 
   return {
     ...s,
-    decisions: s.decisions.filter(d => !isDismissed({ text: d.ask, src: d.src }, list)),
-    failed: s.failed.filter(f => f.fixed || !isDismissed(f, list)),
-    notChecked: s.notChecked.filter(n => !isDismissed(n, list)),
+    decisions: s.decisions.filter(d => !isDismissed({ text: d.ask, src: d.src }, list, run)),
+    failed: s.failed.filter(f => f.fixed || !isDismissed(f, list, run)),
+    notChecked: s.notChecked.filter(n => !isDismissed(n, list, run)),
   }
 }
 

@@ -66,3 +66,20 @@ test('marking happens once: a name missing from the source is marked, and drawin
   expect(marked.headline).toBe('Edited `ghost.ts` (?).')
   expect(head).toBe('Edited `ghost.ts` (?).')
 })
+
+test('one handled item does not hide a similar item in the same summary, and says how many are hidden', () => {
+  const twin = { ...summary, decisions: [], notChecked: [{ text: 'The colors were not seen on a real screen.', why: null, src: [9] }, { text: 'The colors were not seen in the terminal.', why: null, src: [9] }] }
+  const same = { summary: twin, range: data.range, run: 3 }
+  const shown = present(same, [{ text: 'The colors were not seen on a real screen.', src: [9], run: 3 }], true)
+
+  expect(shown.hidden).toBe(1)
+  expect(shown.lines.some(l => l.text.includes('not seen in the terminal'))).toBe(true)
+  expect(shown.lines.some(l => l.text.includes('not seen on a real screen'))).toBe(false)
+})
+
+test('after Run again, a reworded copy of a handled item stays hidden', () => {
+  const later = { summary: { ...summary, decisions: [], notChecked: [{ text: 'The colors were not seen on a real screen yet.', why: null, src: [9] }] }, range: data.range, run: 4 }
+  const shown = present(later, [{ text: 'The colors were not seen on a real screen.', src: [9], run: 3 }], true)
+
+  expect(shown.hidden).toBe(1)
+})

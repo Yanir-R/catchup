@@ -7,7 +7,8 @@ import type { Line, Range } from './render'
 import type { Summary } from './schema'
 
 /** What the pane keeps of a finished summary: the structured summary, already marked, and its range. */
-export type Data = { summary: Summary; range: Range }
+/** `run` identifies the summary on screen, so a handled item can be told apart from a similar one in the same summary. */
+export type Data = { summary: Summary; range: Range; run?: number }
 
 /** Marks every quoted name that is not in `source` with (?). Done once, so later drawing needs no source. */
 export function markSummary(s: Summary, source: string): Summary {
@@ -29,14 +30,14 @@ export function markSummary(s: Summary, source: string): Summary {
 
 /** The lines to draw now, and how many open items the person has hidden. */
 export function present(data: Data, dismissed: readonly Dismissed[], expanded: boolean): { lines: Line[]; hidden: number } {
-  const shown = withoutDismissed(data.summary, dismissed)
+  const shown = withoutDismissed(data.summary, dismissed, data.run)
 
   return { lines: render(shown, data.range, null, { expanded }), hidden: dismissibleCount(data.summary) - dismissibleCount(shown) }
 }
 
 /** The texts the buttons send, from what the person still sees: handled items are left out. */
 export function textsFor(data: Data, dismissed: readonly Dismissed[]): { text: string; handoff: string; reply: string } {
-  const shown = withoutDismissed(data.summary, dismissed)
+  const shown = withoutDismissed(data.summary, dismissed, data.run)
 
   return {
     text: toPlainText(render(shown, data.range, null, { expanded: true })),

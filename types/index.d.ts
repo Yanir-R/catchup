@@ -1,4 +1,4 @@
-export type CatchupDismissed = { text: string; src: number[] }
+export type CatchupDismissed = { text: string; src: number[]; run?: number }
 
 export type CatchupLine = {
   tone: 'head' | 'label' | 'item' | 'sub' | 'rec' | 'dim' | 'warn'
@@ -22,6 +22,8 @@ export type CatchupSummary = {
 export type CatchupData = {
   summary: CatchupSummary
   range: { first: number; last: number; agentMessages: number }
+  /** Identifies this summary, so a handled item is matched exactly within it and loosely in a later run. */
+  run?: number
 }
 
 export type CatchupView = {

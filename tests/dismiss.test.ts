@@ -64,3 +64,25 @@ test('nothing handled leaves the summary as it is, and the count says how many c
   expect(dismissibleCount(summary)).toBe(4)
   expect(dismissibleCount(withoutDismissed(summary, [{ text: 'Decide whether to publish the mod.', src: [252] }]))).toBe(3)
 })
+
+test('in the summary where ✓ was pressed, only the very same item is hidden, not a similar one beside it', () => {
+  const task = { text: 'Check the check.sh type errors against the code.', src: [38, 41] }
+  const similar = { text: 'The check.sh type errors were not checked against the code.', src: [38, 41] }
+  const handled = [{ ...task, run: 7 }]
+
+  expect(isDismissed(task, handled, 7)).toBe(true)
+  expect(isDismissed(similar, handled, 7)).toBe(false)
+})
+
+test('in a later run, a reworded copy of a handled item is still hidden', () => {
+  const handled = [{ text: 'Check the check.sh type errors against the code.', src: [38, 41], run: 7 }]
+
+  expect(isDismissed({ text: 'Check the check.sh type errors against the code now.', src: [38, 41] }, handled, 8)).toBe(true)
+})
+
+test('a handled item is remembered with the summary it came from', () => {
+  const list = remember([], { text: 'Publish the mod', src: [1], run: 5 })
+
+  expect(list).toEqual([{ text: 'Publish the mod', src: [1], run: 5 }])
+  expect(remember(list, { text: 'Publish the mod', src: [1], run: 5 })).toHaveLength(1)
+})

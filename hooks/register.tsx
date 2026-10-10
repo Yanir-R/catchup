@@ -60,8 +60,8 @@ async function fillReply($: Engine, text: string, surface: Surface): Promise<voi
 }
 
 /** Marks an open item as handled, so it stays hidden from the pane, the handoff and the reply template. */
-async function dismissItem($: Engine, item: Dismissed): Promise<void> {
-  await update($, dismissed, list => remember(list, item))
+async function dismissItem($: Engine, item: Dismissed, run: number | undefined): Promise<void> {
+  await update($, dismissed, list => remember(list, { ...item, run }))
 }
 
 type View = { status: 'idle' | 'working' | 'done' | 'error'; lines: Line[]; data: Data | null; label: string; at: number }
@@ -126,7 +126,7 @@ async function run($: Engine, range: Range, mine: AbortController, model: string
   const failed: Line[] = [{ tone: 'warn', text: result.ok ? '' : `Catch-up failed: ${result.reason}. Run it again.` }]
   const lines = result.ok ? result.lines : failed
 
-  const data = result.ok && result.data !== undefined ? result.data : null
+  const data = result.ok && result.data !== undefined ? { ...result.data, run: Date.now() } : null
 
   await update($, view, () => ({ status: result.ok ? 'done' : 'error', lines, data, label, at: Date.now() }))
 }
@@ -325,7 +325,7 @@ export const register: Register = (on, options) => {
               text
             ) : (
               <Box>
-                <Button key={`done:${i}`} label="✓" onPress={() => dismissItem($, item)} />
+                <Button key={`done:${i}`} label="✓" onPress={() => dismissItem($, item, data === null ? undefined : data.run)} />
                 {text}
               </Box>
             )
