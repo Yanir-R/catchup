@@ -6,6 +6,15 @@ All notable changes to this project are written here. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-10-10
+
+### Fixed
+- The summary timer is now written in a form the plugin directory can read.
+- A test fixture no longer looks like a credential read to the directory scan.
+
+### Added
+- A plugin icon.
+
 ## [0.1.1] - 2026-10-10
 
 ### Added

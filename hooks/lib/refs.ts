@@ -7,8 +7,8 @@ export function ref(src: readonly number[]): string {
   const sorted = [...src].sort((a, b) => a - b)
 
   if (sorted.length <= 2) {
-    return ` [${sorted.map(n => `#${n}`).join(', ')}]`
+    return ' [' + sorted.map(n => '#' + n).join(', ') + ']'
   }
 
-  return ` [#${sorted[0]}–#${sorted[sorted.length - 1]} · ${sorted.length} msgs]`
+  return ' [#' + sorted[0] + '–#' + sorted[sorted.length - 1] + ' · ' + sorted.length + ' msgs]'
 }

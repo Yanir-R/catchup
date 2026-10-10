@@ -142,7 +142,9 @@ async function begin($: Engine, range: Range, ctx: Context): Promise<void> {
   await update($, view, () => ({ status: 'working', lines: [], data: null, label: range.from !== undefined ? 'new messages' : range.n === null ? 'since your last message' : `last ${range.n} ${range.n === 1 ? 'message' : 'messages'}`, at: Date.now() }))
   const total = (await $.session.messages()).length
   await update($, dismissedAt, () => total)
-  $.clock.after(0, () => void run($, range, mine, ctx.model))
+  $.clock.after(0, async () => {
+    await run($, range, mine, ctx.model)
+  })
 }
 
 export const register: Register = (on, options) => {

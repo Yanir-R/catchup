@@ -1,6 +1,6 @@
 {
   "name": "catchup",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Summarize the agent messages you have not read, in plain ASD-STE100-style English. Run /catchup, type \"brief me\", or press the Catch up button.",
   "license": "MIT",
   "author": {
@@ -9,7 +9,6 @@
   },
   "homepage": "https://github.com/Yanir-R/catchup",
   "repository": "https://github.com/Yanir-R/catchup",
-  "types": "./types/index.d.ts",
   "userConfig": {
     "threshold": {
       "type": "number",
@@ -36,5 +35,7 @@
     "agents",
     "handoff",
     "simplified-english"
-  ]
+  ],
+  "icon": "./.claude-plugin/icon.png",
+  "types": "./types/index.d.ts"
 }
