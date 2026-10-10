@@ -103,12 +103,13 @@ async function run($: Engine, range: Range, mine: AbortController, model: string
   const start = range.from !== undefined && range.from <= all.length ? range.from : pickStart(all, range.n)
   const picked = all.slice(start)
   const count = countAgentMessages(picked)
+  const noun = (n: number): string => (n === 1 ? 'message' : 'messages')
   const label =
     range.from !== undefined
-      ? `${count} new messages`
+      ? `${count} new ${noun(count)}`
       : range.n === null
-        ? `${count} messages since your last message`
-        : `last ${picked.length} messages`
+        ? `${count} ${noun(count)} since your last message`
+        : `last ${picked.length} ${noun(picked.length)}`
 
   if (picked.length === 0) {
     const text = `No messages after your last prompt. Checked ${all.length} messages; your last prompt is number ${lastPromptIndex(all) + 1}.`
@@ -138,7 +139,7 @@ async function begin($: Engine, range: Range, ctx: Context): Promise<void> {
   ctx.running = mine
 
   await $.ui.open({ id: PANE, title: 'Catch-up' })
-  await update($, view, () => ({ status: 'working', lines: [], data: null, label: range.from !== undefined ? 'new messages' : range.n === null ? 'since your last message' : `last ${range.n} messages`, at: Date.now() }))
+  await update($, view, () => ({ status: 'working', lines: [], data: null, label: range.from !== undefined ? 'new messages' : range.n === null ? 'since your last message' : `last ${range.n} ${range.n === 1 ? 'message' : 'messages'}`, at: Date.now() }))
   const total = (await $.session.messages()).length
   await update($, dismissedAt, () => total)
   $.clock.after(0, () => void run($, range, mine, ctx.model))

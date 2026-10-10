@@ -8,6 +8,8 @@ All notable changes to this project are written here. The format follows
 
 ### Fixed
 
+- The pane header says "1 message", not "1 messages".
+- A tool error the model also reports is no longer listed twice under `FAILED`. The model's clearer wording is kept, unless it says the failure is fixed.
 - Pressing ✓ hides exactly that item. It no longer hides a similar item from the same summary. A later run still hides a reworded copy of a handled item.
 - The reply to `/catchup` no longer repeats the plugin name (`catchup: catchup: summary pane opened.`).
 

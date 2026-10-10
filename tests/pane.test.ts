@@ -112,3 +112,19 @@ test('the command reply does not repeat the plugin name, which the engine alread
   expect(out.text).toBe('summary pane opened.')
   expect(out.text?.includes('catchup')).toBe(false)
 })
+
+test('the header says "1 message", not "1 messages"', async ($, on) => {
+  on('ui.open', () => ({ value: { isPlaced: true as const } }))
+  on('session.messages', () => ({ value: [user('Hi.'), agent('Hello there.')] }))
+  on('model.complete', () => ({ value: { isAnswered: true as const, text: MODEL_ANSWER, usage: USAGE } }))
+  const clock = mock.clock(on)
+
+  await $.command.run({ command: 'catchup', args: '' })
+  await clock.advance(10)
+
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+
+  expect(await ui.find({ type: 'Text', text: /Catch-up: 1 message since your last message/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /1 messages/ })).toBe(undefined)
+  await ui.unmount()
+})

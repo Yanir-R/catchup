@@ -206,10 +206,13 @@ export function withFacts<T extends { decisions: Decision[]; failed: Failure[]; 
   const covered = (srcs: number[], by: Array<{ src: number[] }>): boolean =>
     srcs.length > 0 && srcs.every(n => by.some(b => b.src.includes(n)))
 
+  // A tool error the model also reports, citing that very call and saying it is still open, keeps the model's clearer wording.
+  const reported = (f: { src: number[] }): boolean => summary.failed.some(m => !m.fixed && m.src.length > f.src.length && f.src.length > 0 && f.src.every(n => m.src.includes(n)))
+
   return {
     ...summary,
     decisions: [...facts.decisions, ...summary.decisions.filter(d => !covered(d.src, facts.decisions)), ...extra],
-    failed: [...facts.failed, ...summary.failed.filter(f => !covered(f.src, facts.failed))],
+    failed: [...facts.failed.filter(f => !reported(f)), ...summary.failed.filter(f => !covered(f.src, facts.failed))],
     running: [...facts.running, ...summary.running.filter(r => !covered(r.src, facts.running))],
   }
 }

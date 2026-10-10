@@ -158,3 +158,27 @@ test('a short question such as "Which one?" is still a question; a fragment is n
   expect(questionsIn('Ready to go on?')).toEqual(['Ready to go on?'])
   expect(questionsIn('Ok?')).toEqual([])
 })
+
+test('a tool error that the model also reports, citing that call and calling it open, is listed once, in the model\'s words', () => {
+  const fact = { text: 'Bash returned an error 1 time, and the last call failed. Last error: exit 1', fixed: false, src: [37] }
+  const facts = { decisions: [], questions: [], failed: [fact], running: [] }
+  const model = { decisions: [], failed: [{ text: 'check.sh reports 2 type errors that the agent says are false.', fixed: false, src: [37, 40] }], running: [] }
+
+  expect(withFacts(model, facts).failed.map(f => f.text)).toEqual(['check.sh reports 2 type errors that the agent says are false.'])
+})
+
+test('if the model says the failure is fixed, the tool error stays, because the last call still failed', () => {
+  const fact = { text: 'Bash returned an error 1 time, and the last call failed.', fixed: false, src: [37] }
+  const facts = { decisions: [], questions: [], failed: [fact], running: [] }
+  const model = { decisions: [], failed: [{ text: 'check.sh failed once.', fixed: true, src: [37, 40] }], running: [] }
+
+  expect(withFacts(model, facts).failed.map(f => f.text)).toEqual(['Bash returned an error 1 time, and the last call failed.', 'check.sh failed once.'])
+})
+
+test('a model failure that cites other messages does not remove the tool error', () => {
+  const fact = { text: 'Bash returned an error 1 time, and the last call failed.', fixed: false, src: [37] }
+  const facts = { decisions: [], questions: [], failed: [fact], running: [] }
+  const model = { decisions: [], failed: [{ text: 'The deploy failed.', fixed: false, src: [40, 41] }], running: [] }
+
+  expect(withFacts(model, facts).failed).toHaveLength(2)
+})
