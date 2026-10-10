@@ -212,6 +212,30 @@ Tests and examples use made-up data. Never copy text from a real session into a 
 Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the rules, [SECURITY.md](SECURITY.md) to
 report a problem privately, and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). The maintainer reviews and approves every change.
 
+## FAQ
+
+**How do I catch up on many unread agent messages in Claude Code?**
+Type `/catchup`, or `brief me`, or press the **Catch up (N)** button. The summary opens in a pane, with the open
+questions first and a source number for each item.
+
+**Does it add a turn to my conversation?**
+No. The pane is not part of the conversation, and nothing is sent to the agent.
+
+**Can it summarize just 1 message?**
+Yes. `/catchup 1` works, and the button shows after you have been away for `afkMinutes`.
+
+**What is "simple English" here?**
+The model is asked to write in the style of ASD-STE100, relaxed to about 80%: short sentences, active voice, one word
+for one thing. This follows Andrej Karpathy's remark that STE-style text is easier to read. The mod does not contain
+the standard and does not claim to conform to it.
+
+**Does it send my conversation anywhere?**
+Only to the model you already use in Claude Code, through your own session. The mod has no server and no network code.
+Secrets and emails are removed first. This is a safety net, not a guarantee.
+
+**Can I trust the summary?**
+Check an item against its `[#n]` source before you act on it. A result with no proof is shown as `NOT CHECKED`, never as done.
+
 ## Notices
 
 ASD-STE100 is a copyright and a trademark of ASD (AeroSpace, Security and Defence Industries Association of Europe),

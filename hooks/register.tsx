@@ -60,8 +60,8 @@ async function fillReply($: Engine, text: string, surface: Surface): Promise<voi
 }
 
 /** Marks an open item as handled, so it stays hidden from the pane, the handoff and the reply template. */
-async function dismissItem($: Engine, item: Dismissed, run: number | undefined): Promise<void> {
-  await update($, dismissed, list => remember(list, { ...item, run }))
+async function dismissItem($: Engine, item: Dismissed, runId: number | undefined): Promise<void> {
+  await update($, dismissed, list => remember(list, { ...item, run: runId }))
 }
 
 type View = { status: 'idle' | 'working' | 'done' | 'error'; lines: Line[]; data: Data | null; label: string; at: number }
@@ -98,7 +98,7 @@ async function askModel($: Engine, prompt: string, model: string, signal: AbortS
   return { ok: false, reason: r.reason === 'api-error' ? `the model call failed (${r.error})` : `the model call ended (${r.reason})` }
 }
 
-async function run($: Engine, range: Range, mine: AbortController, model: string): Promise<void> {
+async function makeSummary($: Engine, range: Range, mine: AbortController, model: string): Promise<void> {
   const all = await $.session.messages()
   const start = range.from !== undefined && range.from <= all.length ? range.from : pickStart(all, range.n)
   const picked = all.slice(start)
@@ -143,7 +143,7 @@ async function begin($: Engine, range: Range, ctx: Context): Promise<void> {
   const total = (await $.session.messages()).length
   await update($, dismissedAt, () => total)
   const start = async (): Promise<void> => {
-    await run($, range, mine, ctx.model)
+    await makeSummary($, range, mine, ctx.model)
   }
   $.clock.after(0, start)
 }

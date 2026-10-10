@@ -6,6 +6,15 @@ All notable changes to this project are written here. The format follows
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-10-10
+
+### Changed
+- A new plugin icon.
+- Renamed an internal function so the plugin directory can follow it.
+
+### Added
+- A FAQ in the README.
+
 ## [0.1.3] - 2026-10-10
 
 ### Fixed
