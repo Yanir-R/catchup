@@ -6,6 +6,9 @@ All notable changes to this project are written here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- Known limits now name where the mod is untested, with links to open issues.
+
 ## [0.1.6] - 2026-10-10
 
 ### Added

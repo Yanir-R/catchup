@@ -159,6 +159,7 @@ DONE 1 · DECIDED 1
 - A range of more than about 8 chunks of text leaves out the oldest messages. The summary says so.
 - Something you did, or answered in a screenshot, is not seen. Mark the item handled with ✓.
 - Recommendations in unusual wording or in tables are not read.
+- Only the terminal is tested. The Desktop app's Code tab should work, but nobody has checked ([issue 1](https://github.com/Yanir-R/catchup/issues/1)). Where a mod cannot draw (the VS Code chat panel, `claude -p`, cloud sessions), `/catchup` shows nothing yet ([issue 2](https://github.com/Yanir-R/catchup/issues/2)). Help is welcome on both.
 - The model can still be wrong. Check an item against its `[#n]` source before you act on it.
 
 ## Develop
