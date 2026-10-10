@@ -6,6 +6,9 @@ All notable changes to this project are written here. The format follows
 
 ## [Unreleased]
 
+### Added
+- The logo in the README, and a 1280x640 social preview image in `docs/media/`.
+
 ## [0.1.4] - 2026-10-10
 
 ### Changed

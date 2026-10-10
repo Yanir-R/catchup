@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/media/logo.png" alt="catchup: a worried owl looking at a pile of unread messages and one green checked message" width="180">
+</p>
+
 # catchup
 
 A mod for Claude Code. It summarizes the agent messages you have not read, in plain English written in the style of
