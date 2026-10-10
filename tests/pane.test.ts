@@ -100,3 +100,15 @@ test('with a real summary, the buttons do what they say: handled items hide, sec
   expect(await has(/NEEDS YOU \(1\)/)).toBe(true)
   await ui.unmount()
 })
+
+test('the command reply does not repeat the plugin name, which the engine already adds', async ($, on) => {
+  on('ui.open', () => ({ value: { isPlaced: true as const } }))
+  on('session.messages', () => ({ value: [user('Hi.'), agent('Hello.')] }))
+  on('model.complete', () => ({ value: { isAnswered: true as const, text: MODEL_ANSWER, usage: USAGE } }))
+  mock.clock(on)
+
+  const out = await $.command.run({ command: 'catchup', args: '' })
+
+  expect(out.text).toBe('summary pane opened.')
+  expect(out.text?.includes('catchup')).toBe(false)
+})

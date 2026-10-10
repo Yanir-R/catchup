@@ -232,7 +232,7 @@ export const register: Register = (on, options) => {
 
     await begin($, { n: request.n }, ctx)
 
-    return { text: 'catchup: summary pane opened.' }
+    return { text: 'summary pane opened.' }
   })
 
   on('prompt.submit', async ($, e, next) => {
@@ -249,7 +249,7 @@ export const register: Register = (on, options) => {
 
     await begin($, { n: request.n }, ctx)
 
-    return { drop: 'catchup: summary pane opened.' }
+    return { drop: 'summary pane opened.' }
   })
 
   on('session.append', ($, e, next) => {

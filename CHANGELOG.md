@@ -6,6 +6,10 @@ All notable changes to this project are written here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The reply to `/catchup` no longer repeats the plugin name (`catchup: catchup: summary pane opened.`).
+
 ## [0.1.0] - 2026-10-10
 
 First public version.
