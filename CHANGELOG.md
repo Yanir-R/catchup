@@ -1,0 +1,36 @@
+# Changelog
+
+All notable changes to this project are written here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.1.0] - 2026-10-10
+
+First public version.
+
+### Added
+
+- `/catchup [N]` summarizes everything after your last prompt, or the last N messages (1 to 500).
+- The phrases `brief me`, `catchup`, `catchup N`, `catch up N` and `what did I miss`, typed as a whole prompt, do the same without a slash.
+- A **Catch up (N)** button above the prompt. It shows when 8 or more messages are below the screen, or after 10 minutes without a prompt when there is at least 1 new message.
+- A pane with the summary in a fixed layout: `NEEDS YOU`, `FAILED`, `DONE`, `FIXED`, `RUNNING`, `NOT CHECKED`, `DECIDED`, and a `Next:` line.
+- A style inspired by ASD-STE100 at about 80%: short sentences, active voice, one word for one thing.
+- Message numbers (`[#12]`) on every item, checked in code against the messages the model was shown.
+- Code-checked rules: a `done` item needs a proof, a quoted name that is not in the messages gets a `(?)` mark, a choice credited to you must come from one of your own messages, and a question you already answered is not listed as open.
+- Open questions asked in plain text are found by code, with their listed options and the agent's recommendation marked with `★`.
+- Compact view by default, with a **Show all** toggle.
+- A **✓** button on each open item to mark it handled, and **Show hidden (n)** to bring them back.
+- **Copy**, **Copy handoff** (clipboard only) and **Reply template** (fills the prompt box, sends nothing).
+- Settings: `threshold`, `afkMinutes`, `model`.
+- Secrets and email addresses are removed from the text before it goes to the model.
+
+### Known limits
+
+- The automatic unread count needs the terminal view to report which rows are on screen.
+- Something you did, or answered in a screenshot, is not seen. Use the ✓ button.
+- Recommendations in unusual wording or in tables are not read.
+
+[Unreleased]: https://github.com/Yanir-R/catchup/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Yanir-R/catchup/releases/tag/v0.1.0

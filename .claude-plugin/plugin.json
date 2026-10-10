@@ -1,0 +1,40 @@
+{
+  "name": "catchup",
+  "version": "0.1.0",
+  "description": "Summarize the agent messages you have not read, in plain ASD-STE100-style English. Run /catchup, type \"brief me\", or press the Catch up button.",
+  "license": "MIT",
+  "author": {
+    "name": "Yanir",
+    "url": "https://www.linkedin.com/in/yanirrot/"
+  },
+  "homepage": "https://github.com/Yanir-R/catchup",
+  "repository": "https://github.com/Yanir-R/catchup",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "threshold": {
+      "type": "number",
+      "title": "Button threshold",
+      "description": "Show the Catch up button when this many messages are below the screen.",
+      "default": 8
+    },
+    "afkMinutes": {
+      "type": "number",
+      "title": "Away minutes",
+      "description": "After this many minutes without a prompt from you, show the button even for 1 new message.",
+      "default": 10
+    },
+    "model": {
+      "type": "string",
+      "title": "Summary model",
+      "description": "Model alias or id used for the summary.",
+      "default": "haiku"
+    }
+  },
+  "keywords": [
+    "summary",
+    "catch-up",
+    "agents",
+    "handoff",
+    "simplified-english"
+  ]
+}

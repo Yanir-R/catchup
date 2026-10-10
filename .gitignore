@@ -1,0 +1,14 @@
+# Written by Claude Code when the mod loads
+.claude-plugin/types/
+tsconfig.json
+
+# Never commit these
+.DS_Store
+*.log
+.env*
+*.pem
+*.key
+
+# Local-only lists of private words. They live outside the repository and must never be committed.
+private-terms*.txt
+*private-terms*

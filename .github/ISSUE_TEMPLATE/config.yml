@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security problem privately
+    url: https://github.com/Yanir-R/catchup/security/advisories/new
+    about: For a leak of private text, a way around the secret removal, or anything else that could harm someone. Do not open a public issue.

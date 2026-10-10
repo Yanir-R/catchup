@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest a change or a new feature.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and what gets in the way? Describe the problem before the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Fit
+      options:
+        - label: It needs no network access and no file access. The mod has neither today.
+        - label: It does not change a command, a setting name or the plugin name. If it does, I explain why.

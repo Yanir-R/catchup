@@ -1,0 +1,14 @@
+{
+  "name": "catchup",
+  "description": "A Claude Code mod that summarizes the agent messages you have not read.",
+  "owner": {
+    "name": "Yanir",
+    "url": "https://www.linkedin.com/in/yanirrot/"
+  },
+  "plugins": [
+    {
+      "name": "catchup",
+      "source": "./"
+    }
+  ]
+}
