@@ -6,6 +6,13 @@ active voice), relaxed to about 80%. See [Notices](#notices).
 
 You come back to a long thread, or an agent worked while you were away. Instead of scrolling, you ask for a summary.
 
+## Demo
+
+![You come back to a long agent thread. You press Catch up, read what needs you, hide an item, fill a reply, and answer in place.](docs/media/demo.gif)
+
+The animation shows steps 2 to 8. The full 1:56 video, with captions and every step: [catchup-demo.mp4](https://github.com/Yanir-R/catchup/releases/download/v0.1.1/catchup-demo.mp4).
+It was recorded on a made-up project, so it holds no real data.
+
 ## Use
 
 | You do | What happens |

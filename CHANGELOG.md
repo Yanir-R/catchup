@@ -6,6 +6,12 @@ All notable changes to this project are written here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-10
+
+### Added
+
+- A demo in the README: a short animation, and the full 1:56 video as a release download. Both were recorded on a made-up project. The animation shows steps 2 to 8; the video shows everything.
+
 ### Fixed
 
 - The pane header says "1 message", not "1 messages".
@@ -39,5 +45,6 @@ First public version.
 - Something you did, or answered in a screenshot, is not seen. Use the ✓ button.
 - Recommendations in unusual wording or in tables are not read.
 
-[Unreleased]: https://github.com/Yanir-R/catchup/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Yanir-R/catchup/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/Yanir-R/catchup/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Yanir-R/catchup/releases/tag/v0.1.0
