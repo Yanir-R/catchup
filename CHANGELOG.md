@@ -6,6 +6,15 @@ All notable changes to this project are written here. The format follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-10
+
+### Changed
+- The README lists the hook that clears the summary after `/clear`, `/resume` and `/branch`.
+- The release gate no longer writes the capability names out in one pattern, so a text scan does not read them as calls.
+
+### Added
+- `.pr_agent.toml`: settings for an automatic pull request review, with a short checklist for a Claude Code mod.
+
 ## [0.2.0] - 2026-10-10
 
 ### Changed
