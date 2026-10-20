@@ -130,6 +130,7 @@ DONE 1 · DECIDED 1
 - `session.start`: registers the `/catchup` command.
 - `command.run`: opens the pane for `/catchup [N]`.
 - `prompt.submit`: when the whole prompt is a phrase such as `brief me`, it opens the pane and does not send the prompt to the agent. Any other prompt passes through unchanged.
+- `classic.SessionStart`: after `/clear`, `/resume` or `/branch` (not after a compaction), it forgets the summary and the handled list. It changes nothing else.
 - `session.append`: counts new agent messages for the button. It changes nothing.
 - `ui.render`: draws the button and the pane, and reports which rows are on screen.
 
